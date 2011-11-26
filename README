@@ -1,0 +1,15 @@
+This is a script to convert all FLAC files found in directory INPUT
+into mp3 files in directory OUTPUT.
+
+./shadow-flac-to-mp3.sh master recoded
+
+It also transfers vital tags from flac to mp3, in ID3v2 UTF-8 format.
+
+It uses flac, lame, parallel and eyeD3 for tags.
+
+All settings are hardcoded: three parallel processes, cbr 320 kbps.
+It is incremental: it would not retranscode any files unless the original
+or the script itself has changed. It also would not leave partially
+recorded files lying around pretending to be good in case of system failure.
+
+I hope it would not delete all your music collection.
