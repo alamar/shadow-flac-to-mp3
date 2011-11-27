@@ -67,3 +67,15 @@ parallel -0 -j 3 -a "$INS" -a "$OUTS" "$SCRIPT" {1} {2}
 
 rm -f "$SCRIPT" "$INS" "$OUTS"
 
+echo -n "Copying over covers."
+find "$1" -name \*.jpg -o -name \*.jpeg -o -name \*.png -o -name \*.gif -print0 | while read -d $'\0' IF; do
+  OF=`echo "$IF" | sed s,"$1","$2",g`
+  if [ ! \( -f "$OF" -a "$IF" -ot "$OF" \) ]; then
+    cp "$IF" "$OF"
+    echo -n .
+  fi
+done
+
+echo
+echo "Done!"
+
