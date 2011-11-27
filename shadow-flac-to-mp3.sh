@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ME="`pwd`/$0"
+ME="$0"
 
 if [ ! -f "$ME" ]; then
   echo "Cannot find me: $ME"
@@ -12,6 +12,7 @@ OUTS=`mktemp -t 'shadow-flac-to-mp3XXXX'`
 
 exec 5>$INS
 exec 6>$OUTS
+exec 2>/dev/null
 
 echo -n "Scanning dirs."
 
@@ -40,7 +41,7 @@ if [ ! -f "\$1" ]; then
 fi
 
 echo "\$1" "->" "\$2"
-rm -f "\$2" "\$2.part"
+rm -f "\$2.part"
 
 ARTIST=\`metaflac "\$1" --show-tag=ARTIST | sed s/.*=//g\`
 TITLE=\`metaflac "\$1" --show-tag=TITLE | sed s/.*=//g\`
@@ -48,9 +49,9 @@ ALBUM=\`metaflac "\$1" --show-tag=ALBUM | sed s/.*=//g\`
 TRACKNUMBER=\`metaflac "\$1" --show-tag=TRACKNUMBER | sed s/.*=//g\`
 DATE=\`metaflac "\$1" --show-tag=DATE | sed s/.*=//g\`
 
-(flac -c -d "\$1" 2> /dev/null | lame -m j -q 2 --cbr -b 320 - "\$2.part" 2> /dev/null && \
-eyeD3 --set-encoding=utf8 -t "\$TITLE" -n "\${TRACKNUMBER:-0}" -a "\$ARTIST" -A "\$ALBUM" -Y "\$DATE" "\$2.part" > /dev/null 2>&1 && \
-mv "\$2.part" "\$2") || rm -f "\$2.part"
+(flac -c -d "\$1" | lame -m j -q 2 --cbr -b 320 - "\$2.part" && \
+eyeD3 --set-encoding=utf8 -t "\$TITLE" -n "\${TRACKNUMBER:-0}" -a "\$ARTIST" -A "\$ALBUM" -Y "\$DATE" "\$2.part" >&2 && \
+mv -f "\$2.part" "\$2") || rm -f "\$2.part"
 
 if [ -f "\$2" ]; then
   exit 0
