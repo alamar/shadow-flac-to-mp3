@@ -32,18 +32,29 @@ fi
 echo "$1" "->" "$2"
 rm -f "$2.part"
 
+CHANNELS=`metaflac "$1" --show-channels`
 ARTIST=`metaflac "$1" --show-tag=ARTIST | sed 's/[^=]*=//g'`
 TITLE=`metaflac "$1" --show-tag=TITLE | sed 's/[^=]*=//g'`
 ALBUM=`metaflac "$1" --show-tag=ALBUM | sed 's/[^=]*=//g'`
 TRACKNUMBER=`metaflac "$1" --show-tag=TRACKNUMBER | sed 's/[^=]*=//g; s/\/.*//g'`
-DATE=`metaflac "$1" --show-tag=DATE | sed 's/[^=]*=//g'`
+DATE=`metaflac "$1" --show-tag=DATE | sed 's/[^=]*=//g'; s/[ -].*//g`
 COMMENT=`metaflac "$1" --show-tag=DESCRIPTION | sed 's/[^=]*=//g' | tr $'\n' ';' | sed 's/;*$//g'`
 
-(flac -c -d "$1" | lame -m j -q 2 --cbr -b 320 - "$2.part" && \
-eyeD3 --encoding=utf8 -t "$TITLE" -n "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" --recording-date="$DATE" -Y "$DATE" -c "$COMMENT" "$2.part" >&2 && \
+QUALITY="-m j --cbr -b 320"
+if [ "$CHANNELS" -eq 1 ]; then
+    QUALITY="-m m --cbr -b 192"
+fi
+
+DATEARGS=
+if [ "$DATE" -gt 0 ]; then
+    DATEARGS="--recording-date=$DATE -Y $DATE"
+fi
+
+(flac -c -d "$1" | lame -h $QUALITY  - "$2.part" && \
+eyeD3 --encoding=utf8 -t "$TITLE" -n "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" $DATEARGS -c "$COMMENT" "$2.part" >&2 && \
 mv -f "$2.part" "$2") || rm -f "$2.part"
 
-if [ -f "$2" ]; then
+if [ -f "$2" -a "$1" -ot "$2" ]; then
   exit 0
 fi
 
